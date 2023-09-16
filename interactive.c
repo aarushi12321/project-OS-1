@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "parse.h"
+#include "defs.h"
 
 void interactiveMode(){
     printf("dash> ");
@@ -16,11 +17,12 @@ void interactiveMode(){
 
     while((linelen = getline(&inputLine, &inputBuffer, stdin)) > 0){
         // change to interactive mode functions.
-        char* command = parseFn(inputLine);
+        instruction* inst = parseFn(inputLine);
         // remove printf and check the input. If it is exit, cd or path go to the default commands,
+        printf("Name of the instruction : %s \n",inst->name);
+        printf("Number of arguments passed: %d \n",inst->nArguments);
         // else go to the commands specified in the paths that will be specified.
-        printf("%s",command);
-        
+
         // use exit command later.
         break;
     }
