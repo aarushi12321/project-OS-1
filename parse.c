@@ -23,7 +23,9 @@ instruction* parseFn(char* inpStr){
     // custom separator
     char* sep = " ";
     // token from strtok_r function
-    char* token = strtok_r(inpStr, sep, &cmdBuffer);
+    char* token = strtok_r(inpStr, "\n", &cmdBuffer);
+
+    token = strtok_r(inpStr, sep, &cmdBuffer);
 
     // first token is the name of the instruction
     inst->name = (char*)malloc((strlen(token) + 1) * sizeof(char));
