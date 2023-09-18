@@ -62,15 +62,18 @@ char** built_path(instruction* inst, int* ptrPaths){
 
 void forkAndExec(char* checkPath, instruction* inst){
     // create an args array
-    char** args =  malloc((inst->nArguments + 1) * sizeof(char*)); 
+    // +2 for checkpath and NULL
+    char** args =  malloc((inst->nArguments + 2) * sizeof(char*)); 
 
     args[0] = (char*)malloc(strlen(checkPath) + 1);
     strcpy(args[0], checkPath);
 
-    for (int i = 1; i <= inst->nArguments; i++) {
+    int i;
+    for (i = 1; i <= inst->nArguments; i++) {
         args[i] = (char*)malloc(strlen(inst->arguments[i - 1]) + 1);
         strcpy(args[i], inst->arguments[i - 1]);
     }
+    args[i] = NULL;
 
     // fork and exec
     pid_t pid, wpid;
