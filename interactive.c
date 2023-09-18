@@ -21,7 +21,7 @@ void interactiveMode(){
             // change to interactive mode functions.
             instruction* inst = parseFn(inputLine);
             // remove printf and check the input. If it is exit, cd or path go to the default commands
-            checkInstruction(inst);
+            checkAndExecInstruction(inst);
             // else go to the commands specified in the paths that will be specified.
             break;
         }

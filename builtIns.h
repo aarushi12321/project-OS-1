@@ -2,6 +2,6 @@
 #define BUILTINS_H
 #include "defs.h"
 
-void checkInstruction(instruction*);
+void checkAndExecInstruction(instruction*);
 
 #endif

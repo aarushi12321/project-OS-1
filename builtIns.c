@@ -60,12 +60,58 @@ char** built_path(instruction* inst, int* ptrPaths){
     return paths;
 };
 
-void forkAndExec(char* finalPath){
-    printf("%s\n", finalPath);
+void forkAndExec(char* checkPath, instruction* inst){
+    // create an args array
+    char** args =  malloc((inst->nArguments + 1) * sizeof(char*)); 
+
+    args[0] = (char*)malloc(strlen(checkPath) + 1);
+    strcpy(args[0], checkPath);
+
+    for (int i = 1; i <= inst->nArguments; i++) {
+        args[i] = (char*)malloc(strlen(inst->arguments[i - 1]) + 1);
+        strcpy(args[i], inst->arguments[i - 1]);
+    }
+
+    // fork and exec
+    pid_t pid, wpid;
+    int status;
+
+    // fork the process to create a child and parent process.
+    pid = fork();
+    // if pid = 0 that means we're working with the child process
+    if (pid==0){
+        if (execvp(args[0], args) == -1){
+            perror("Could not execute child process.");
+        }
+        exit(0);
+    }
+
+    // error in forking
+    else if (pid < -1){
+        perror("Error forking the process.");
+    }
+
+    else{
+        // commands for the parent process
+        while (1)
+        {   
+            // wpid is the wait id
+            // pid is the process id for the child process
+            // status is the exit status of the child process
+            // WUNTRACED indicates that the parent should also exit if the child has exited.
+            wpid = waitpid(pid, &status, WUNTRACED);
+
+            // if child process has exited abnormally or due to signal, exit the whilw loop.
+            if (WIFEXITED(status) || WIFSIGNALED(status)){
+                break;
+            }
+        }
+    }
+
     return;
 };
 
-void checkInstruction(instruction* inst){
+void checkAndExecInstruction(instruction* inst){
     // by default set them to default path values
 
     // if the instruction is cd
@@ -93,27 +139,7 @@ void checkInstruction(instruction* inst){
         // check if the command exists in the mentioned paths
         // also, additionally check if the user has mentioned absolute path for the command.
 
-        // construct the command
-        int totalLen = 0;
-        totalLen += strlen(inst->name)+1;
-        for(int i=0; i< inst->nArguments; i++){
-            // for the space
-            totalLen += strlen(inst->arguments[i]) + 1;
-        }
-
-        // allocate the memory
-        char* command = malloc((totalLen+1)*sizeof(char));
-        
-        // reconstruct the command
-        strcpy(command, inst->name);
-
-        for(int i=0; i< inst->nArguments; i++){
-            strcat(command, " ");
-            strcat(command, inst->arguments[i]);
-        }
-
         // create the command
-        char* finalPath;
         int checkpathLen = 0;
         int pathLen = 0;
         int found = 0;
@@ -134,14 +160,8 @@ void checkInstruction(instruction* inst){
             if(access(checkPath, X_OK) == 0){
                 found = 1;
 
-                pathLen += strlen(paths[i]) + strlen(command);
-                char* finalPath = malloc((pathLen+2)*sizeof(char));
-                strcpy(finalPath, paths[i]);
-                strcat(finalPath, "/");
-                strcat(finalPath,command);
-
                 // call fork and exec
-                forkAndExec(finalPath);
+                forkAndExec(checkPath, inst);
                 break;
             }
             // if it does concat path with command and send to execute
