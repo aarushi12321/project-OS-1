@@ -6,5 +6,7 @@ typedef struct instruction{
     char* name;
     char** arguments;
     int nArguments;
+    int redirection;
+    char* outfile;
 }instruction;
 #endif 

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include "defs.h"
 
 // declared as global vars
@@ -115,6 +116,31 @@ void forkAndExec(char* checkPath, instruction* inst){
 };
 
 void checkAndExecInstruction(instruction* inst){
+    // for redirection
+    // Open the file for redirection and truncate it
+
+
+    // Store stderr, stdout to restore them later
+    int original_stdout = dup(STDOUT_FILENO);
+    int original_stderr = dup(STDERR_FILENO);
+    if (inst->redirection) {
+
+        int fd = open(inst->outfile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+        if (fd == -1) {
+            perror("Error opening file");
+        }
+
+        // Flush any buffered output to the terminal
+        fflush(stdout);
+        fflush(stderr);
+
+        // Redirect standard output and standard error to the file
+        dup2(fd, STDOUT_FILENO);
+        dup2(fd, STDERR_FILENO);
+
+        close(fd); // Close the file descriptor
+}
+
     // by default set them to default path values
 
     // if the instruction is cd
@@ -174,6 +200,13 @@ void checkAndExecInstruction(instruction* inst){
         if(found==0){
             perror("No such command.");
         }
+
+        // Restore the original file descriptors
+        dup2(original_stdout, STDOUT_FILENO);
+        dup2(original_stderr, STDERR_FILENO);
+
+        close(original_stdout); // Close the original stdout file descriptor
+        close(original_stderr); // Close the original stderr file descriptor
     }
     return;
 };

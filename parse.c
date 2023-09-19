@@ -15,6 +15,10 @@ instruction** parseFn(char* inpStr){
     char* cmdBuffer1;
     char* token1 = strtok_r(inpStr, "\n", &cmdBuffer1);
 
+    // filername if output redirection.
+    char* filename;
+    int redirect = 0;
+
     while(token1){
         // Tokenize each line using '&' as the second separator
         char* token2;
@@ -33,15 +37,26 @@ instruction** parseFn(char* inpStr){
                 strcpy(inst->name, token3);
                 inst->nArguments = 0;
                 inst->arguments = NULL;
+                inst->outfile = NULL;
+                inst->redirection = 0;
 
                 while (token3) {
                     // Add command arguments
                     token3 = strtok_r(NULL, " ", &cmdBuffer3);
-                    if (token3) {
-                        inst->arguments = (char**)realloc(inst->arguments, (inst->nArguments + 1) * sizeof(char*));
-                        inst->arguments[inst->nArguments] = (char*)malloc((strlen(token3) + 1) * sizeof(char));
-                        strcpy(inst->arguments[inst->nArguments], token3);
-                        inst->nArguments++;
+                    // add a condition where token is >
+                    if (token3 && strcmp(token3, ">")==0){
+                        // code for output re-direction
+                        token3 = strtok_r(NULL, " ", &cmdBuffer3);
+                        inst->outfile = token3;
+                        inst->redirection = 1;
+                    }
+                    else{
+                        if (token3) {
+                            inst->arguments = (char**)realloc(inst->arguments, (inst->nArguments + 1) * sizeof(char*));
+                            inst->arguments[inst->nArguments] = (char*)malloc((strlen(token3) + 1) * sizeof(char));
+                            strcpy(inst->arguments[inst->nArguments], token3);
+                            inst->nArguments++;
+                    }
                     }
                 }
 
