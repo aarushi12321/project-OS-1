@@ -84,7 +84,7 @@ void forkAndExec(char* checkPath, instruction* inst){
     pid = fork();
     // if pid = 0 that means we're working with the child process
     if (pid==0){
-        if (execvp(args[0], args) == -1){
+        if (execvp(checkPath, args) == -1){
             perror("Could not execute child process.");
         }
         exit(0);
