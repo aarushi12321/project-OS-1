@@ -19,9 +19,13 @@ void interactiveMode(){
 
         while((linelen = getline(&inputLine, &inputBuffer, stdin)) > 0){
             // change to interactive mode functions.
-            instruction* inst = parseFn(inputLine);
+            instruction** instructionArr = parseFn(inputLine);
             // remove printf and check the input. If it is exit, cd or path go to the default commands
-            checkAndExecInstruction(inst);
+            int i=0;
+            while(instructionArr[i]!=NULL){
+                checkAndExecInstruction(instructionArr[i]);
+                i++;
+            }
             // else go to the commands specified in the paths that will be specified.
             break;
         }

@@ -4,50 +4,60 @@
 #include <string.h>
 #include "defs.h"
 
-instruction* parseFn(char* inpStr){
+instruction** parseFn(char* inpStr){
     // get the input from the user and parse the string to get the command and its arguments.
-    // Assume, for now that there is only one command. Later, modify this to implement many commands
-    // at the same time.
 
-    // modify the return type to the array of struct that should be created later that contains the
-    // commands and the arguments.
+    // define the array of instructions and a counter for the number of instructions
+    instruction** instructionArr = NULL;
+    int instructionCount = 0;
 
-    // define an instruction struct
-    instruction* inst = (instruction*) malloc(sizeof(instruction));
-    // set the number of arguments to 0.
-    inst->nArguments = 0;
-    inst->arguments = NULL;
+    // Tokenize the input string using '\n' as the first separator
+    char* cmdBuffer1;
+    char* token1 = strtok_r(inpStr, "\n", &cmdBuffer1);
 
-    // to track the position of the input string
-    char* cmdBuffer;
-    // custom separator
-    char* sep = " ";
-    // token from strtok_r function
-    char* token = strtok_r(inpStr, "\n", &cmdBuffer);
+    while(token1){
+        // Tokenize each line using '&' as the second separator
+        char* token2;
+        char* cmdBuffer2;
+        token2 = strtok_r(token1, "&", &cmdBuffer2);
 
-    token = strtok_r(inpStr, sep, &cmdBuffer);
+        while(token2){
+            // Tokenize each command using ' ' as the third separator
+            char* cmdBuffer3;
+            char* token3 = strtok_r(token2, " ", &cmdBuffer3);
 
-    // first token is the name of the instruction
-    inst->name = (char*)malloc((strlen(token) + 1) * sizeof(char));
-    strcpy(inst->name, token);
+            if (token3){
+                // Create a new instruction
+                instruction* inst = (instruction*)malloc(sizeof(instruction));
+                inst->name = (char*)malloc((strlen(token3) + 1) * sizeof(char));
+                strcpy(inst->name, token3);
+                inst->nArguments = 0;
+                inst->arguments = NULL;
 
-    while(token){
-        // Check the input. Store it to a static array. If it is exit, cd or path go 
-        // to the default commands  else go to the commands specified in the paths that will be specified.
-        
-        // passed NULL to continue parsing the same sentence.
-        token = strtok_r(NULL, sep, &cmdBuffer);
-        // add the arguments to the arguments array in the instuction struct.
+                while (token3) {
+                    // Add command arguments
+                    token3 = strtok_r(NULL, " ", &cmdBuffer3);
+                    if (token3) {
+                        inst->arguments = (char**)realloc(inst->arguments, (inst->nArguments + 1) * sizeof(char*));
+                        inst->arguments[inst->nArguments] = (char*)malloc((strlen(token3) + 1) * sizeof(char));
+                        strcpy(inst->arguments[inst->nArguments], token3);
+                        inst->nArguments++;
+                    }
+                }
 
-        // if token is not null then 
-        if (token){
-            inst->arguments = (char**) realloc (inst->arguments, (inst->nArguments+1)*sizeof(char*));
-            inst->arguments[inst->nArguments] = (char*) malloc ((strlen(token) + 1) * sizeof(char));
-            strcpy(inst->arguments[inst->nArguments], token);
-            inst->nArguments++;
+                // Add the instruction to the array
+                instructionArr = (instruction**)realloc(instructionArr, (instructionCount + 1) * sizeof(instruction*));
+                instructionArr[instructionCount] = inst;
+                instructionCount++;
+            }
+
+            token2 = strtok_r(NULL, "&", &cmdBuffer2);
         }
+        token1 = strtok_r(NULL, "\n", &cmdBuffer1);
     }
+    // Add a NULL pointer at the end of the instruction array
+    instructionArr = (instruction**)realloc(instructionArr, (instructionCount + 1) * sizeof(instruction*));
+    instructionArr[instructionCount] = NULL;
 
-    // change return type. Only to test.
-    return inst;
+    return instructionArr;
 }
