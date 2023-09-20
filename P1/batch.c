@@ -10,7 +10,7 @@ void batchMode(char* filename){
     // open a file to read
     FILE* file = fopen(filename, "r");
     if (file==NULL){
-        perror("Error opening file.");
+        errorMessage();
         return;
     }
 

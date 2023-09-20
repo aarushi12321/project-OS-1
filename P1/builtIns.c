@@ -8,6 +8,12 @@
 #include <fcntl.h>
 #include "defs.h"
 
+void errorMessage(){
+    char error_message[30] = "An error has occurred\n";
+    write(STDERR_FILENO, error_message, strlen(error_message));
+    return;
+}
+
 // declared as global vars
 char* defaultPaths[] = {"/bin", "/usr/bin"};
 char** paths=defaultPaths;
@@ -20,12 +26,12 @@ char* builtInInstructions[] = {"cd", "exit", "path"};
 // that indicates the status of execution of this built in command.
 int built_cd(instruction* inst){
     // if the cd command does not have a path, return null.
-    if (inst->arguments[0] == NULL){
-        perror("Error 1.");
+    if (inst->nArguments == 0){
+        errorMessage();
     }
     // if it fails to change directory, return -1 else it returns 0.
     else if (chdir(inst->arguments[0])!=0){
-            perror("Error 2.");
+            errorMessage();
         }
     // on successful completion, return 1.
     return 1;
@@ -35,6 +41,9 @@ int built_cd(instruction* inst){
 // that indicates the status of execution of this built in command.
 int built_exit(instruction* inst){
     // exit out of the shell.
+    if (inst->nArguments > 0){
+        errorMessage();
+    }
     exit(0);
 };
 
@@ -85,14 +94,14 @@ void forkAndExec(char* checkPath, instruction* inst){
     // if pid = 0 that means we're working with the child process
     if (pid==0){
         if (execvp(checkPath, args) == -1){
-            perror("Could not execute child process.");
+            errorMessage();
         }
         exit(0);
     }
 
     // error in forking
     else if (pid < -1){
-        perror("Error forking the process.");
+        errorMessage();
     }
 
     else{
@@ -127,7 +136,8 @@ void checkAndExecInstruction(instruction* inst){
 
         int fd = open(inst->outfile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
         if (fd == -1) {
-            perror("Error opening file");
+            errorMessage();
+            exit(1);
         }
 
         // Flush any buffered output to the terminal
@@ -158,7 +168,7 @@ void checkAndExecInstruction(instruction* inst){
     else if (strcmp(inst->name, "path")==0){
         paths = built_path(inst, &nPaths);
         if(!paths){
-            perror("Could not add paths.");
+            errorMessage();
         }
     }
 
@@ -198,7 +208,7 @@ void checkAndExecInstruction(instruction* inst){
         }
 
         if(found==0){
-            perror("No such command.");
+            errorMessage();
         }
 
         // Restore the original file descriptors

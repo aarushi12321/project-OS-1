@@ -23,7 +23,7 @@ int main(int argc, char* argv[]){
     }
     else{
         // revisit to set it up to the standard error.
-        printf("Error");
+        errorMessage();
     }
 
     return EXIT_SUCCESS;
