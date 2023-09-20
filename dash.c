@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "interactive.h"
+#include "batch.h"
 
 int main(int argc, char* argv[]){
     // first input the arguments to the function. This will decide if the user wants interactive mode 
@@ -13,7 +14,9 @@ int main(int argc, char* argv[]){
     else if(argc == 2){
         //batchMode();
         // delete line after test
-        printf("Batch Mode");
+        // pass the file as input to batch mode function
+        batchMode(argv[1]);
+        
     }
     else{
         // revisit to set it up to the standard error.
