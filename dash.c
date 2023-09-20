@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include "interactive.h"
 #include "batch.h"
+#include "parse.h"
+#include "builtIns.h"
+#include "defs.h"
 
 int main(int argc, char* argv[]){
     // first input the arguments to the function. This will decide if the user wants interactive mode 
