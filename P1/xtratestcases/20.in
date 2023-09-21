@@ -1,5 +1,5 @@
 path /bin /Users/aarushisethi/Desktop/C/project1/P1
-cd test & myls > output201 & pwd > output202 & uname > output203
+cd test > output201 & pwd > output202 & uname > output203
 cat output201
 cat output202
 cat output203

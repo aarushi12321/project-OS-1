@@ -55,17 +55,18 @@ char** built_path(instruction* inst, int* ptrPaths){
     // to be used because everytime we set them from scratch.
     
     // initialize the array paths
-    char** paths=NULL;
+    char** paths = (char**)malloc((inst->nArguments + 2) * sizeof(char*));
+    paths[0] = (char*) malloc ((strlen("/bin") + 1)*sizeof(char));
+    strcpy(paths[0], "/bin");
+
     for(int i=0; i < inst->nArguments; i++){
-        // reallocate memory for the paths array
-        paths = (char**) realloc (paths, (i+1)*sizeof(char*));
         // allocate memory for the string that will be input
-        paths[i] = (char*) malloc ((strlen(inst->arguments[i]) + 1)*sizeof(char));
+        paths[i+1] = (char*) malloc ((strlen(inst->arguments[i]) + 1)*sizeof(char));
         // copy the argument to path
-        strcpy(paths[i], inst->arguments[i]);
+        strcpy(paths[i+1], inst->arguments[i]);
     }
 
-    *ptrPaths = inst->nArguments;
+    *ptrPaths = inst->nArguments+1;
 
     return paths;
 };
@@ -128,29 +129,6 @@ void checkAndExecInstruction(instruction* inst){
     // for redirection
     // Open the file for redirection and truncate it
 
-
-    // Store stderr, stdout to restore them later
-    int original_stdout = dup(STDOUT_FILENO);
-    int original_stderr = dup(STDERR_FILENO);
-    if (inst->redirection) {
-
-        int fd = open(inst->outfile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-        if (fd == -1) {
-            errorMessage();
-            exit(1);
-        }
-
-        // Flush any buffered output to the terminal
-        fflush(stdout);
-        fflush(stderr);
-
-        // Redirect standard output and standard error to the file
-        dup2(fd, STDOUT_FILENO);
-        dup2(fd, STDERR_FILENO);
-
-        close(fd); // Close the file descriptor
-}
-
     // by default set them to default path values
 
     // if the instruction is cd
@@ -210,13 +188,35 @@ void checkAndExecInstruction(instruction* inst){
         if(found==0){
             errorMessage();
         }
-
-        // Restore the original file descriptors
-        dup2(original_stdout, STDOUT_FILENO);
-        dup2(original_stderr, STDERR_FILENO);
-
-        close(original_stdout); // Close the original stdout file descriptor
-        close(original_stderr); // Close the original stderr file descriptor
     }
+
+
+    // Store stderr, stdout to restore them later
+    int original_stdout = dup(STDOUT_FILENO);
+    int original_stderr = dup(STDERR_FILENO);
+    if (inst->redirection) {
+
+        int fd = open(inst->outfile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+        if (fd == -1) {
+            errorMessage();
+        }
+
+        // Flush any buffered output to the terminal
+        fflush(stdout);
+        fflush(stderr);
+
+        // Redirect standard output and standard error to the file
+        dup2(fd, STDOUT_FILENO);
+        dup2(fd, STDERR_FILENO);
+
+        close(fd); // Close the file descriptor
+    }
+
+    // Restore the original file descriptors
+    dup2(original_stdout, STDOUT_FILENO);
+    dup2(original_stderr, STDERR_FILENO);
+
+    close(original_stdout); // Close the original stdout file descriptor
+    close(original_stderr); // Close the original stderr file descriptor
     return;
 };

@@ -41,10 +41,15 @@ instruction** parseFn(char* inpStr){
                 inst->redirection = 0;
 
                 while (token3) {
+                    if (inst->redirection == 1){
+                        errorMessage();
+                        exit(1);
+                    }
                     // Add command arguments
                     token3 = strtok_r(NULL, " ", &cmdBuffer3);
                     // add a condition where token is >
                     if (token3 && strcmp(token3, ">")==0){
+                        
                         // code for output re-direction
                         token3 = strtok_r(NULL, " ", &cmdBuffer3);
                         inst->outfile = token3;
