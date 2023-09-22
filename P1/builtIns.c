@@ -55,9 +55,11 @@ char** built_path(instruction* inst, int* ptrPaths){
     // to be used because everytime we set them from scratch.
     
     // initialize the array paths
-    char** paths = (char**)malloc((inst->nArguments + 2) * sizeof(char*));
+    char** paths = (char**)malloc((inst->nArguments + 3) * sizeof(char*));
     paths[0] = (char*) malloc ((strlen("/bin") + 1)*sizeof(char));
     strcpy(paths[0], "/bin");
+    paths[1] = (char*) malloc ((strlen("/usr/bin") + 1)*sizeof(char));
+    strcpy(paths[1], "/usr/bin");
 
     for(int i=0; i < inst->nArguments; i++){
         // allocate memory for the string that will be input
@@ -133,6 +135,28 @@ void checkAndExecInstruction(instruction* inst){
 
     // if the instruction is cd
     // comparing if the strings are equal
+    // Store stderr, stdout to restore them later
+    
+    int original_stdout = dup(STDOUT_FILENO);
+    int original_stderr = dup(STDERR_FILENO);
+
+    if (inst->redirection) {
+        int fd = open(inst->outfile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+        if (fd == -1) {
+            errorMessage();
+        }
+
+        // Flush any buffered output to the terminal
+        fflush(stdout);
+        fflush(stderr);
+
+        // Redirect standard output and standard error to the file
+        dup2(fd, STDOUT_FILENO);
+        dup2(fd, STDERR_FILENO);
+
+        close(fd); // Close the file descriptor
+    }
+
     if (strcmp(inst->name, "cd")==0){
         int res = built_cd(inst);
     }
@@ -189,29 +213,6 @@ void checkAndExecInstruction(instruction* inst){
             errorMessage();
         }
     }
-
-
-    // Store stderr, stdout to restore them later
-    int original_stdout = dup(STDOUT_FILENO);
-    int original_stderr = dup(STDERR_FILENO);
-    if (inst->redirection) {
-
-        int fd = open(inst->outfile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-        if (fd == -1) {
-            errorMessage();
-        }
-
-        // Flush any buffered output to the terminal
-        fflush(stdout);
-        fflush(stderr);
-
-        // Redirect standard output and standard error to the file
-        dup2(fd, STDOUT_FILENO);
-        dup2(fd, STDERR_FILENO);
-
-        close(fd); // Close the file descriptor
-    }
-
     // Restore the original file descriptors
     dup2(original_stdout, STDOUT_FILENO);
     dup2(original_stderr, STDERR_FILENO);

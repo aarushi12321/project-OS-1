@@ -41,7 +41,7 @@ instruction** parseFn(char* inpStr){
                 inst->redirection = 0;
 
                 while (token3) {
-                    if (inst->redirection == 1){
+                    if (inst->outfile && inst->redirection > 1){
                         errorMessage();
                         exit(1);
                     }
@@ -52,8 +52,12 @@ instruction** parseFn(char* inpStr){
                         
                         // code for output re-direction
                         token3 = strtok_r(NULL, " ", &cmdBuffer3);
+                        if (token3 == NULL){
+                            errorMessage();
+                            exit(1);
+                        }
                         inst->outfile = token3;
-                        inst->redirection = 1;
+                        inst->redirection++;
                     }
                     else{
                         if (token3) {
