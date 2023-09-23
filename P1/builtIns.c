@@ -63,12 +63,12 @@ char** built_path(instruction* inst, int* ptrPaths){
 
     for(int i=0; i < inst->nArguments; i++){
         // allocate memory for the string that will be input
-        paths[i+1] = (char*) malloc ((strlen(inst->arguments[i]) + 1)*sizeof(char));
+        paths[i+2] = (char*) malloc ((strlen(inst->arguments[i]) + 1)*sizeof(char));
         // copy the argument to path
-        strcpy(paths[i+1], inst->arguments[i]);
+        strcpy(paths[i+2], inst->arguments[i]);
     }
 
-    *ptrPaths = inst->nArguments+1;
+    *ptrPaths = inst->nArguments+2;
 
     return paths;
 };
